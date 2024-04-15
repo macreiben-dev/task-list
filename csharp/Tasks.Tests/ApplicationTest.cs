@@ -29,11 +29,10 @@ namespace Tasks
 				return;
 			}
 
-			applicationThread.Abort();
 			throw new Exception("The application is still running.");
 		}
 
-		[Test, Timeout(1000)]
+		[Test, CancelAfter(1000)]
 		public void ItWorks()
 		{
 			Execute("show");
@@ -92,7 +91,7 @@ namespace Tasks
 		{
 			var length = expectedOutput.Length;
 			var actualOutput = console.RetrieveOutput(expectedOutput.Length);
-			Assert.AreEqual(expectedOutput, actualOutput);
+			Assert.That(expectedOutput, Is.EqualTo(actualOutput));
 		}
 
 		private void ReadLines(params string[] expectedOutput)
