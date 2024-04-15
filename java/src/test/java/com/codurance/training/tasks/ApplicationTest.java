@@ -1,18 +1,14 @@
 package com.codurance.training.tasks;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintWriter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import java.io.*;
 
 import static java.lang.System.lineSeparator;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ApplicationTest {
     public static final String PROMPT = "> ";
@@ -22,7 +18,7 @@ public final class ApplicationTest {
     private final PipedInputStream outStream = new PipedInputStream();
     private final BufferedReader outReader = new BufferedReader(new InputStreamReader(outStream));
 
-    private Thread applicationThread;
+    private final Thread applicationThread;
 
     public ApplicationTest() throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(new PipedInputStream(inStream)));
@@ -31,13 +27,13 @@ public final class ApplicationTest {
         applicationThread = new Thread(taskList);
     }
 
-    @Before public void
-    start_the_application() {
+    @BeforeEach
+    public void start_the_application() {
         applicationThread.start();
     }
 
-    @After public void
-    kill_the_application() throws IOException, InterruptedException {
+    @AfterEach
+    public void kill_the_application() throws InterruptedException {
         if (!stillRunning()) {
             return;
         }
@@ -51,8 +47,9 @@ public final class ApplicationTest {
         throw new IllegalStateException("The application is still running.");
     }
 
-    @Test(timeout = 1000) public void
-    it_works() throws IOException {
+    @Test
+    @Timeout(1)
+    public void it_works() throws IOException {
         execute("show");
 
         execute("add project secrets");
@@ -61,10 +58,10 @@ public final class ApplicationTest {
 
         execute("show");
         readLines(
-            "secrets",
-            "    [ ] 1: Eat more donuts.",
-            "    [ ] 2: Destroy all humans.",
-            ""
+                "secrets",
+                "    [ ] 1: Eat more donuts.",
+                "    [ ] 2: Destroy all humans.",
+                ""
         );
 
         execute("add project training");
@@ -108,7 +105,7 @@ public final class ApplicationTest {
         int length = expectedOutput.length();
         char[] buffer = new char[length];
         outReader.read(buffer, 0, length);
-        assertThat(String.valueOf(buffer), is(expectedOutput));
+        assertThat(String.valueOf(buffer)).isEqualTo(expectedOutput);
     }
 
     private void readLines(String... expectedOutput) throws IOException {
